@@ -90,7 +90,7 @@ public class Display extends Canvas implements Runnable {
         System.arraycopy(screen.pixels, 0, pixels, 0, WIDTH * HEIGHT);
 
         Graphics g = bs.getDrawGraphics();
-        g.drawImage(img, 0, 0, WIDTH * 10, HEIGHT * 10, observer);
+        g.drawImage(img, 0, 0, WIDTH, HEIGHT, observer);
         g.dispose();
         bs.show();
 
