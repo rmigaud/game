@@ -12,8 +12,8 @@ import java.awt.image.ImageObserver;
 
 public class Display extends Canvas implements Runnable {
     // window dimensions
-    final static int WIDTH = 800;
-    final static int HEIGHT = 600;
+    final public static int WIDTH = 800;
+    final public static int HEIGHT = 600;
     private final Screen screen;
     private final BufferedImage img;
     private final int[] pixels;
@@ -65,9 +65,39 @@ public class Display extends Canvas implements Runnable {
     }
 
     public void run() {
+        int frames = 0;
+        double unprocessedSeconds = 0;
+        long previousTime = System.nanoTime();
+        double secondsPerTick = 1.0 / 60.0;
+        int tickCount = 0;
+        boolean ticked = false;
+
         while (running) { // game loop.
-            tick();
+            long currentTime = System.nanoTime();
+            long passedTime = currentTime - previousTime;
+
+            previousTime = currentTime;
+            unprocessedSeconds += passedTime / 100000000.0;
+
+            while (unprocessedSeconds > secondsPerTick) {
+                tick();
+                unprocessedSeconds -= secondsPerTick;
+                ticked = true;
+                tickCount++;
+                if (tickCount % 60 == 0) {
+                    System.out.println(frames + " fps");
+                    previousTime += 1000;
+                    frames = 0;
+                }
+            }
+            if (ticked) {
+                render();
+                frames++;
+            }
             render();
+            frames++;/*
+                        tick();
+            render();*/
         }
     }
 
@@ -82,7 +112,7 @@ public class Display extends Canvas implements Runnable {
             return;
         }
 
-        screen.render();
+        screen.testRender();
 
         /*for(int i=0; i<WIDTH*HEIGHT; i++){
             pixels[i] = screen.pixels[i];
