@@ -1,37 +1,32 @@
 package Graphics;
 
 import game.Display;
+import game.Game;
 
 import java.util.Random;
 
 public class Screen extends Render {
     private final Render test;
+    private final Render3D render;
 
     public Screen(int width, int height) {
         super(width, height);
         Random random = new Random();
-
+        render = new Render3D(Display.width(), Display.height());
         test = new Render(256, 256);
         for (int i = 0; i < 256 * 256; i++) {
-            test.pixels[i] = random.nextInt();
+            test.pixels[i] = random.nextInt() * (random.nextInt(5) / 4);
         }
     }
 
-    public void testRender() {
+    public void testRender(Game game) {
         //clear screen
-        for (int pixel = 0; pixel < Display.HEIGHT * Display.WIDTH; pixel++) {
-            pixels[pixel] = 0;
+        for (int pix = 0; pix < Display.height() * Display.width(); pix++) {
+            pixels[pix] = 0;
         }
 
-        int imgHeight = 256;
-        int imgWidth = 256;
-        int xmovement =
-                (int) (Math.sin(System.currentTimeMillis() % 1000.0 / 1000 * Math.PI * 2) * 200);
-        int ymovement =
-                (int) (Math.cos(System.currentTimeMillis() % 1000.0 / 1000 * Math.PI * 2) * 200);
-        int xPos = (width - imgHeight) / 2 + xmovement;
-        int yPos = (height - imgWidth) / 2 - ymovement;
-        draw(test, xPos, yPos);
+        render.floor(game);
+        draw(render, 0, 0);
     }
 
     @Override

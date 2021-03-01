@@ -2,6 +2,7 @@ package game;
 
 import Graphics.Render;
 import Graphics.Screen;
+import input.InputHandler;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,20 +13,33 @@ import java.awt.image.ImageObserver;
 
 public class Display extends Canvas implements Runnable {
     // window dimensions
-    final public static int WIDTH = 800;
-    final public static int HEIGHT = 600;
+    private final static int WIDTH = 800;
+    private final static int HEIGHT = 600;
     private final Screen screen;
     private final BufferedImage img;
+    private final Game game;
     private final int[] pixels;
     private Thread thread;
     private Render render;
     private boolean running = false;
     private ImageObserver observer;
+    private final InputHandler input;
 
     public Display() {
+        Dimension size = new Dimension(width(), height());
+        setPreferredSize(size);
+        setMinimumSize(size);
+        setMaximumSize(size);
         screen = new Screen(WIDTH, HEIGHT);
+        game = new Game();
         img = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
         pixels = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
+
+        input = new InputHandler();
+        addKeyListener(input);
+        addFocusListener(input);
+        addMouseListener(input);
+        addMouseMotionListener(input);
     }
 
     public static void main(String[] args) {
@@ -42,6 +56,14 @@ public class Display extends Canvas implements Runnable {
         frame.setVisible(true); //set visibility
         display.start();
         System.out.println("game completed successfully"); // test
+    }
+
+    public static int height() {
+        return Display.HEIGHT;
+    }
+
+    public static int width() {
+        return Display.WIDTH;
     }
 
     private void start() {
@@ -77,12 +99,12 @@ public class Display extends Canvas implements Runnable {
             long passedTime = currentTime - previousTime;
 
             previousTime = currentTime;
-            unprocessedSeconds += passedTime / 100000000.0;
+            unprocessedSeconds += passedTime / 1000000000.0;
 
             while (unprocessedSeconds > secondsPerTick) {
-                tick();
+                game.tick(input.key);
                 unprocessedSeconds -= secondsPerTick;
-                ticked = true;
+                //ticked = true;
                 tickCount++;
                 if (tickCount % 60 == 0) {
                     System.out.println(frames + " fps");
@@ -90,21 +112,14 @@ public class Display extends Canvas implements Runnable {
                     frames = 0;
                 }
             }
-            if (ticked) {
+/*            if (ticked) {
                 render();
                 frames++;
-            }
+            }*/
             render();
-            frames++;/*
-                        tick();
-            render();*/
+            frames++;
         }
     }
-
-    private void tick() {
-
-    }
-
     private void render() {
         BufferStrategy bs = this.getBufferStrategy();
         if (bs == null) {
@@ -112,7 +127,7 @@ public class Display extends Canvas implements Runnable {
             return;
         }
 
-        screen.testRender();
+        screen.testRender(game);
 
         /*for(int i=0; i<WIDTH*HEIGHT; i++){
             pixels[i] = screen.pixels[i];
